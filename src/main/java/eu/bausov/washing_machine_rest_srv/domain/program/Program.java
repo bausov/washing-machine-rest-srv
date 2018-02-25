@@ -58,4 +58,13 @@ public class Program extends JPA {
     public void setDrying(Drying drying) {
         this.drying = drying;
     }
+
+    @Override
+    public String toString() {
+        return "Program{" +
+                "\n\t\t" + washing.toString() +
+                ", \n\t\t" + squeaking.toString() +
+                ", \n\t\t" + drying.toString() +
+                "\n}\n";
+    }
 }
