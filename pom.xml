@@ -9,7 +9,7 @@
     <packaging>jar</packaging>
 
     <name>washing-machine-rest-srv</name>
-    <description>Washing Machine Controll</description>
+    <description>Washing Machine Control</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
