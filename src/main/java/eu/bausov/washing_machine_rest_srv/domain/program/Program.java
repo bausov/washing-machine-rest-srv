@@ -12,6 +12,15 @@ public class Program {
     private Squeaking squeaking;
     private Drying drying;
 
+    public Program() {
+    }
+
+    public Program(Washing washing, Squeaking squeaking, Drying drying) {
+        this.washing = washing;
+        this.squeaking = squeaking;
+        this.drying = drying;
+    }
+
     public Washing getWashing() {
         return washing;
     }
