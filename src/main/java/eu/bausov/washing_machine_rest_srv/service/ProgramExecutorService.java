@@ -29,7 +29,7 @@ public class ProgramExecutorService {
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private Program program;
-    private String status = States.WAITING.toString();
+    private StringBuffer status = new StringBuffer(States.WAITING.toString());
     private Date operationEnd;
     private Date programEnd;
     private AtomicBoolean isRunning = new AtomicBoolean(false);
@@ -42,7 +42,7 @@ public class ProgramExecutorService {
         try {
             if (!isRunning.get()) {
                 isRunning.set(true);
-                status = States.RUNNING.toString();
+                status = new StringBuffer(States.RUNNING.toString());
 
                 Washing washing = program.getWashing();
                 Squeaking squeaking = program.getSqueaking();
@@ -66,9 +66,9 @@ public class ProgramExecutorService {
 
         try {
             if (isRunning.get()) {
-                future.cancel(true);
                 isRunning.set(false);
-                status = States.STOPPED.toString();
+                future.cancel(true);
+                status = new StringBuffer(States.STOPPED.toString());
             }
         } finally {
             lock.unlock();
@@ -84,19 +84,30 @@ public class ProgramExecutorService {
 
         try {
             if (isRunning.get() && operationEnd != null && programEnd != null) {
-                Date now = new Date();
-                long opEnd = operationEnd.getTime() - now.getTime();
-                long progEnd = programEnd.getTime() - now.getTime();
 
-                return status +
-                        ",\n\t\toperation estimation: " + (opEnd > 0 ? opEnd : 0) +
-                        ",\n\t\tprogram estimation: " + (progEnd > 0 ? progEnd : 0);
+                return status.toString() + getTimeEstimationsSting();
             }
 
-            return status;
+            return status.toString();
         } finally {
             lock.unlock();
         }
+    }
+
+    private String getTimeEstimationsSting() {
+        Date now = new Date();
+
+        return ",\n\t\toperation estimation: " + getMinutesAndSecondsString(now, operationEnd) +
+                ",\n\t\tprogram estimation: " + getMinutesAndSecondsString(now, programEnd);
+    }
+
+    private String getMinutesAndSecondsString(Date now, Date end) {
+        long l = end.getTime() - now.getTime();
+        if (l <= 0) return "00:00";
+
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(l);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(l);
+        return minutes + ":" + seconds;
     }
 
     private Runnable createProcessRunner(Washing washing, Squeaking squeaking, Drying drying) {
@@ -105,26 +116,29 @@ public class ProgramExecutorService {
             runProcess(squeaking);
             runProcess(drying);
 
-            isRunning.set(false);
-            status = States.FINISHED.toString();
+            if (isRunning.get()) {
+                isRunning.set(false);
+                status = new StringBuffer(States.FINISHED.toString());
+            }
         };
     }
 
     private void runProcess(Process process) {
-        lock.lock();
+        if (isRunning.get()) {
+            lock.lock();
 
-        try {
-            operationEnd = new Date(System.currentTimeMillis() + process.getDuration());
+            try {
+                operationEnd = new Date(System.currentTimeMillis() + process.getDuration());
+                status = new StringBuffer(States.RUNNING.toString()).append(", ").append(process.toString());
+            } finally {
+                lock.unlock();
+            }
 
-            status = States.RUNNING.toString() + ", " + process.toString();
-        } finally {
-            lock.unlock();
-        }
-
-        try {
-            TimeUnit.MILLISECONDS.sleep(process.getDuration()); // emulating real process duration
-        } catch (InterruptedException e) {
-            LOGGER.error("Error while " + process.getClass().getSimpleName() + " operation.");
+            try {
+                TimeUnit.MILLISECONDS.sleep(process.getDuration()); // emulating real process duration
+            } catch (InterruptedException e) {
+                LOGGER.error("Error while " + process.getClass().getSimpleName() + " operation.");
+            }
         }
     }
 }
