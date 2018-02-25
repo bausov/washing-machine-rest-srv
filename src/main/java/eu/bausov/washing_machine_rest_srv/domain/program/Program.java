@@ -1,13 +1,21 @@
 package eu.bausov.washing_machine_rest_srv.domain.program;
 
+import eu.bausov.washing_machine_rest_srv.domain.JPA;
 import eu.bausov.washing_machine_rest_srv.domain.program.process.Drying;
 import eu.bausov.washing_machine_rest_srv.domain.program.process.Squeaking;
 import eu.bausov.washing_machine_rest_srv.domain.program.process.Washing;
 
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
 /**
  * Created by GreenNun on 24/02/2018.
  */
-public class Program {
+@Entity
+@Table(name = "TB_PROGRAMS")
+public class Program extends JPA {
     private Washing washing;
     private Squeaking squeaking;
     private Drying drying;
@@ -21,6 +29,8 @@ public class Program {
         this.drying = drying;
     }
 
+    @OneToOne(optional = false)
+    @JoinColumn(name = "washing")
     public Washing getWashing() {
         return washing;
     }
@@ -29,6 +39,8 @@ public class Program {
         this.washing = washing;
     }
 
+    @OneToOne(optional = false)
+    @JoinColumn(name = "squeaking")
     public Squeaking getSqueaking() {
         return squeaking;
     }
@@ -37,6 +49,8 @@ public class Program {
         this.squeaking = squeaking;
     }
 
+    @OneToOne(optional = false)
+    @JoinColumn(name = "drying")
     public Drying getDrying() {
         return drying;
     }

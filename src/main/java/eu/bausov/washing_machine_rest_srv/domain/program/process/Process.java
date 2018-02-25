@@ -1,9 +1,17 @@
 package eu.bausov.washing_machine_rest_srv.domain.program.process;
 
+import eu.bausov.washing_machine_rest_srv.domain.JPA;
+
+import javax.persistence.*;
+
 /**
  * Created by GreenNun on 24/02/2018.
  */
-public abstract class Process {
+@Entity
+@Table(name = "TB_PROCESSES")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "type")
+public abstract class Process extends JPA {
     private Long duration;
     private Integer temperature;
     private Integer rotationSpeed;
@@ -17,6 +25,8 @@ public abstract class Process {
         this.rotationSpeed = rotationSpeed;
     }
 
+    @Basic(optional = false)
+    @Column(name = "duration")
     public Long getDuration() {
         return duration;
     }
@@ -25,6 +35,8 @@ public abstract class Process {
         this.duration = duration;
     }
 
+    @Basic(optional = false)
+    @Column(name = "temperature")
     public Integer getTemperature() {
         return temperature;
     }
@@ -33,6 +45,8 @@ public abstract class Process {
         this.temperature = temperature;
     }
 
+    @Basic(optional = false)
+    @Column(name = "rpm")
     public Integer getRotationSpeed() {
         return rotationSpeed;
     }
